@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sudoku Bloom</title>
+<style>
+:root{--bg:#f5f7f1;--paper:#fff;--ink:#283a34;--accent:#376c65;--soft:#e1eee7;--peer:#edf4f0;--match:#d3e9dd;--border:#a8bfb4}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;background:var(--bg);color:var(--ink)}main{max-width:510px;margin:auto;padding:24px 15px 36px}header{display:flex;justify-content:space-between;align-items:center}h1{font-size:27px;margin:8px 0}p{color:var(--accent);font-size:13px}.card{border-radius:17px;background:var(--paper);padding:14px;margin:14px 0}.themes,.levels,.tools,.actions{display:flex;gap:7px}.themes{margin-top:9px;flex-wrap:wrap}button{font:inherit;cursor:pointer;border:1px solid var(--border);background:var(--paper);color:var(--ink);border-radius:12px;padding:10px}button:focus-visible{outline:3px solid var(--accent)}.theme{font-size:11px;flex:1;min-width:65px}.theme.active,.level.active,.primary{background:var(--accent);color:white}.levels button{flex:1;font-size:12px;font-weight:600}.stats{display:flex;justify-content:space-between;margin:13px 1px;font-size:12px}.board{aspect-ratio:1;display:grid;grid-template-columns:repeat(9,1fr);background:var(--accent);padding:2px;border-radius:8px;overflow:hidden}.cell{min-width:0;padding:0;border-radius:0;border:0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--paper);font-size:clamp(15px,5vw,26px);color:var(--accent);font-weight:500}.cell.given{font-weight:800;color:var(--ink)}.cell.peer{background:var(--peer)}.cell.match{background:var(--match)}.cell.selected{background:var(--soft);outline:2px solid var(--accent);outline-offset:-2px;z-index:1}.cell.conflict{color:#bc4654;background:#ffe9eb}.cell.notes{font-size:9px;white-space:pre-wrap}.cell:nth-child(3n){border-right:2px solid var(--accent)}.cell:nth-child(n+19):nth-child(-n+27),.cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--accent)}.numbers{display:grid;grid-template-columns:repeat(9,1fr);gap:4px;margin:15px 0}.numbers button{border:0;font-size:23px;font-weight:700;color:var(--accent);background:transparent;padding:10px 0}.numbers button.done{background:var(--soft);border:2px solid var(--accent);border-radius:10px;text-decoration:line-through}.tools button{flex:1;font-size:12px}.actions{margin-top:10px}.actions button{flex:1;font-weight:700}.primary{background:var(--accent);color:white}.muted{font-size:11px;opacity:.75}.dialog{position:fixed;inset:0;background:#101c18a6;display:none;place-items:center;padding:20px}.dialog.open{display:grid}.dialog>section{background:var(--paper);padding:23px;border-radius:20px;width:min(360px,100%)}.dialog h2{margin:0}.dialog nav{display:flex;gap:8px;margin-top:18px}.dialog nav button{flex:1}
+</style></head><body><main>
+<header><div><h1>✿ sudoku bloom</h1><p>A little joy for your mind</p></div><b id="total">✧ 0 solved</b></header>
+<div class="card"><b>Choose your skin</b><div class="themes" id="themes"></div></div>
+<div class="levels"><button data-d="0">Beginner</button><button data-d="1">Intermediate</button><button data-d="2">Advanced</button></div>
+<div class="card"><b id="stage">Beginner · Stage 1</b><p id="milestone">Complete five puzzles to reach your next milestone.</p></div>
+<div class="stats"><span>TIME <b id="clock">00:00</b></span><span id="difficulty">BEGINNER</span></div>
+<div id="board" class="board" aria-label="Sudoku board"></div><div id="numbers" class="numbers"></div>
+<div class="tools"><button id="erase">⌫ Erase</button><button id="notes">✎ Notes off</button><button id="hint">✧ Hint</button><button id="undo">↶ Undo</button></div>
+<div class="actions"><button id="restart">Restart</button><button class="primary" id="new">New puzzle ↗</button></div>
+<p id="message">Select a cell and choose a number.</p><p class="muted">No mistake counter · Unlimited unique-solution puzzles · Progress saved locally</p>
+</main>
+<div id="dialog" class="dialog" role="dialog" aria-modal="true"><section><h2 id="dialogTitle"></h2><p id="dialogBody"></p><nav><button id="cancel">Keep playing</button><button id="confirm" class="primary">Continue</button></nav></section></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),names=['Beginner','Intermediate','Advanced'];
+const palettes=[
+['Calm','#f5f7f1','#fff','#283a34','#376c65','#e1eee7','#edf4f0','#d3e9dd','#a8bfb4'],
+['Midnight','#171e2a','#263246','#edf3ff','#82b4ff','#344b69','#2b394d','#3b5474','#516880'],
+['Peach','#fff3e9','#fffaf6','#553a2f','#d46d4c','#ffe0d2','#fff0e7','#ffdccb','#e2b8a8'],
+['Lavender','#f7f3ff','#fff','#372f54','#7c68b7','#e5dcff','#f1ecff','#ded3ff','#c6bae6'],
+['Forest','#edf4e9','#fff','#293e29','#507d49','#daebd2','#edf5e9','#d7e8ce','#abc7a4']
+];
+let profile={wins:[0,0,0],total:0,theme:0},s=null;
+try{profile={...profile,...JSON.parse(localStorage.getItem('bloom_profile')||'{}')}}catch{}
+const cp=g=>g.map(r=>r.slice()),shuffle=a=>{for(let i=a.length-1;i>0;i--){let j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+function solved(){const bands=shuffle([0,1,2]),cols=shuffle([0,1,2]),rr=bands.flatMap(k=>shuffle([0,1,2]).map(x=>3*k+x)),cc=cols.flatMap(k=>shuffle([0,1,2]).map(x=>3*k+x)),n=shuffle([1,2,3,4,5,6,7,8,9]);return rr.map(r=>cc.map(c=>n[(r*3+(r/3|0)+c)%9]))}
+function options(g,r,c){let a=new Set;for(let i=0;i<9;i++){a.add(g[r][i]);a.add(g[i][c])}let br=r/3|0,bc=c/3|0;for(let i=br*3;i<br*3+3;i++)for(let j=bc*3;j<bc*3+3;j++)a.add(g[i][j]);return [1,2,3,4,5,6,7,8,9].filter(n=>!a.has(n))}
+function ways(g,limit=2){let best,op;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(!g[r][c]){const a=options(g,r,c);if(!a.length)return 0;if(!op||a.length<op.length){best=[r,c];op=a}}if(!best)return 1;let [r,c]=best,count=0;for(const n of op){g[r][c]=n;count+=ways(g,limit-count);if(count>=limit)break}g[r][c]=0;return count}
+function puzzle(d){let answer=solved(),start=cp(answer),target=[34,43,49][d]+Math.min(4,profile.wins[d]/5|0)*2,removed=0;for(const pos of shuffle([...Array(81).keys()])){if(removed>=target)break;let r=pos/9|0,c=pos%9,old=start[r][c];start[r][c]=0;if(ways(start)>1)start[r][c]=old;else removed++}return {answer,start}}
+function save(){try{localStorage.setItem('bloom_profile',JSON.stringify(profile));localStorage.setItem('bloom_game',JSON.stringify(s))}catch{}}
+function begin(d=0){let {answer,start}=puzzle(d);s={d,answer,start,grid:cp(start),notes:{},history:[],selected:null,seconds:0,notesMode:false,done:false};save();render();msg('Fresh puzzle. Enjoy!')}
+function msg(x){$('message').textContent=x}
+function theme(t){profile.theme=t;let p=palettes[t];['--bg','--paper','--ink','--accent','--soft','--peer','--match','--border'].forEach((v,i)=>document.documentElement.style.setProperty(v,p[i+1]));document.querySelectorAll('.theme').forEach((b,i)=>b.classList.toggle('active',i===t));save()}
+palettes.forEach((p,i)=>{let b=document.createElement('button');b.className='theme';b.textContent=p[0];b.style.borderTop='7px solid '+p[4];b.onclick=()=>theme(i);$('themes').appendChild(b)});
+function conflict(r,c){let g=s.grid,v=g[r][c];if(!v)return false;for(let i=0;i<9;i++)if(i!==c&&g[r][i]===v||i!==r&&g[i][c]===v)return true;for(let i=(r/3|0)*3;i<(r/3|0)*3+3;i++)for(let j=(c/3|0)*3;j<(c/3|0)*3+3;j++)if((i!==r||j!==c)&&g[i][j]===v)return true;return false}
+function render(){const {grid,start,selected,d}=s;document.querySelectorAll('[data-d]').forEach(b=>b.classList.toggle('active',+b.dataset.d===d));$('total').textContent='✧ '+profile.total+' solved';$('stage').textContent=names[d]+' · Stage '+((profile.wins[d]/5|0)+1);$('milestone').textContent=(profile.wins[d]%5)+'/5 wins toward next milestone';$('difficulty').textContent=names[d].toUpperCase();$('notes').textContent=s.notesMode?'✎ Notes on':'✎ Notes off';$('clock').textContent=String(s.seconds/60|0).padStart(2,'0')+':'+String(s.seconds%60).padStart(2,'0');
+let board=$('board');board.textContent='';let sel=selected&&grid[selected[0]][selected[1]];let counts=Array(10).fill(0);
+for(let r=0;r<9;r++)for(let c=0;c<9;c++){let v=grid[r][c];if(v)counts[v]++;let b=document.createElement('button');b.className='cell';if(start[r][c])b.classList.add('given');if(selected){let [sr,sc]=selected;if(r===sr||c===sc||(r/3|0)===(sr/3|0)&&(c/3|0)===(sc/3|0))b.classList.add('peer');if(sel&&v===sel)b.classList.add('match');if(r===sr&&c===sc)b.classList.add('selected')}if(conflict(r,c))b.classList.add('conflict');let notes=s.notes[r*9+c];b.textContent=v||((notes&&notes.length)?Array.from({length:9},(_,n)=>notes.includes(n+1)?n+1:'·').join('').replace(/(...)/g,'$1\n').trim():'');if(!v&&notes?.length)b.classList.add('notes');b.onclick=e=>{e.stopPropagation();s.selected=selected?.[0]===r&&selected?.[1]===c?null:[r,c];render()};board.appendChild(b)}
+document.querySelectorAll('.num').forEach(b=>{let n=+b.dataset.n;b.classList.toggle('done',counts[n]===9);b.title=counts[n]===9?'All nine placed':'Place '+n});
+}
+function snap(){s.history.push({grid:cp(s.grid),notes:JSON.parse(JSON.stringify(s.notes))});if(s.history.length>100)s.history.shift()}
+function enter(n){if(!s.selected||s.done)return;let [r,c]=s.selected;if(s.start[r][c])return;snap();let k=r*9+c;if(s.notesMode&&n){let list=new Set(s.notes[k]||[]);list.has(n)?list.delete(n):list.add(n);s.notes[k]=[...list]}else{s.grid[r][c]=n;delete s.notes[k]}save();render();let counts=s.grid.flat().filter(v=>v===n).length;if(n&&counts===9)msg('All '+n+'s are placed ✓');else msg(n?'Number placed.':'Number erased.');if(s.grid.every((row,r)=>row.every((v,c)=>v===s.answer[r][c]))){s.done=true;profile.wins[s.d]++;profile.total++;save();render();msg('Beautifully solved! '+(s.d<2&&profile.wins[s.d]%5===0?'You are ready to explore '+names[s.d+1]+'!':'Start a new puzzle whenever you like.'))}}
+for(let n=1;n<=9;n++){let b=document.createElement('button');b.textContent=n;b.dataset.n=n;b.className='num';b.onclick=()=>enter(n);$('numbers').appendChild(b)}
+document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{if(s.d!==+b.dataset.d)begin(+b.dataset.d)});
+$('erase').onclick=()=>enter(0);$('notes').onclick=()=>{s.notesMode=!s.notesMode;render()};
+$('undo').onclick=()=>{let h=s.history.pop();if(!h)return;Object.assign(s,h);save();render()};
+$('hint').onclick=()=>{let cells=[];for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(!s.start[r][c]&&s.grid[r][c]!==s.answer[r][c])cells.push([r,c]);if(!cells.length)return;let [r,c]=cells[Math.random()*cells.length|0];snap();s.grid[r][c]=s.answer[r][c];delete s.notes[r*9+c];s.selected=[r,c];save();render();msg('A little nudge ✨')};
+function ask(title,body,action,button){$('dialogTitle').textContent=title;$('dialogBody').textContent=body;$('confirm').textContent=button;$('dialog').classList.add('open');$('confirm').onclick=()=>{$('dialog').classList.remove('open');action()}}$('cancel').onclick=()=>$('dialog').classList.remove('open');
+$('restart').onclick=()=>ask('Restart this puzzle?','Your entries and notes will be cleared. Original clues, theme, and completed-puzzle progress will remain.',()=>{s.grid=cp(s.start);s.notes={};s.history=[];s.selected=null;s.seconds=0;s.done=false;save();render();msg('Puzzle restarted.')},'Restart');
+$('new').onclick=()=>ask('New puzzle?','Start a new arrangement at the same difficulty. Unfinished entries will be lost.',()=>begin(s.d),'New puzzle');
+document.addEventListener('click',e=>{if(!e.target.closest('#board')&&s?.selected){s.selected=null;render()}});
+document.addEventListener('keydown',e=>{if(e.key>='1'&&e.key<='9')enter(+e.key);if(e.key==='Backspace'||e.key==='Delete')enter(0)});
+try{let old=JSON.parse(localStorage.getItem('bloom_game')||'null');if(old&&old.grid&&old.start&&!old.done){s=old;s.history=s.history||[];render()}else begin(0)}catch{begin(0)}theme(profile.theme||0);
+setInterval(()=>{if(s&&!s.done){s.seconds++;$('clock').textContent=String(s.seconds/60|0).padStart(2,'0')+':'+String(s.seconds%60).padStart(2,'0');if(s.seconds%10===0)save()}},1000);
+})();
+</script></body></html>
