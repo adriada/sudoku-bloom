@@ -7,13 +7,37 @@
 @keyframes hint-pop{0%{transform:scale(.38);opacity:.2}45%{transform:scale(1.35);opacity:1}100%{transform:scale(1);opacity:1}}@keyframes hint-glow{0%,100%{box-shadow:inset 0 0 0 0 var(--accent)}35%{box-shadow:inset 0 0 0 4px var(--accent)}}.cell.hint-reveal{background:var(--soft)!important;z-index:2;animation:hint-glow 1.6s ease-out}.cell.hint-reveal .hint-digit{display:inline-block;font-weight:900;animation:hint-pop .65s ease-out}@media(prefers-reduced-motion:reduce){.cell.hint-reveal,.cell.hint-reveal .hint-digit{animation:none}}
 #themeCharacters{display:none;justify-content:space-between;pointer-events:none;margin:-5px 4px -2px;font-size:30px}body.blockworld #themeCharacters,body.spacecrew #themeCharacters{display:flex}body.blockworld #themeCharacters span{background:#75a554;border:3px solid #334f2d;border-radius:3px;padding:0 7px;box-shadow:inset 0 -9px #567a42}body.spacecrew #themeCharacters span{background:#dc5b6d;border-radius:18px 18px 7px 7px;border:3px solid #a03c55;padding:0 7px}body.blockworld .cell{border-radius:0}body.blockworld .board{border-radius:1px;box-shadow:6px 6px #789356}body.spacecrew .board{box-shadow:0 0 24px #f26a8050}.checkpoints{display:none}.checkpoints.on{display:block}.checkpoint-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}.checkpoint-row button{font-size:12px}.checkpoint-row strong{font-size:12px}.checkpoint-help{font-size:12px}.tools button:disabled{opacity:.5;cursor:not-allowed}
 body.rainbow .numbers button{background:var(--digit-pale);color:var(--digit-dark);border:1px solid var(--digit-edge);font-weight:800;box-shadow:0 2px 0 var(--digit-edge)}body.rainbow .numbers button.done{background:var(--digit-color);color:#27364a;box-shadow:inset 0 0 0 2px var(--digit-edge);text-decoration:line-through}body.rainbow .board{background:linear-gradient(135deg,#ef9ca8,#f2d37a,#94d5b7,#9bbcf0,#c5a5ed)}body.rainbow .cell:not(.given):not(.selected):not(.conflict){color:var(--cell-digit,var(--accent))}
+.board-scene{position:relative;padding:34px 12px 40px;isolation:isolate}
+.board-scene .board{position:relative;z-index:2}
+#themeCharacters{position:absolute;inset:0;margin:0;pointer-events:none;display:none;z-index:1}
+body.blockworld #themeCharacters,body.spacecrew #themeCharacters{display:block}
+#themeCharacters .peek{position:absolute;display:block;filter:drop-shadow(0 7px 8px #0004)}
+#themeCharacters .left{top:25%;left:-12px}
+#themeCharacters .right{top:38%;right:-12px}
+#themeCharacters .top{top:-3px;left:41%}
+#themeCharacters .bottom{bottom:-1px;left:37%}
+body.blockworld #themeCharacters .peek{width:75px;height:93px;border-radius:5px;border:4px solid #375a2b;background:linear-gradient(#77b45c 0 35%,#527e44 35% 64%,#78553c 64%);box-shadow:inset 0 -13px #60452f}
+body.blockworld #themeCharacters .peek::before{content:'';position:absolute;left:12px;top:19px;width:13px;height:15px;background:#253323;box-shadow:29px 0 #253323}
+body.blockworld #themeCharacters .peek::after{content:'';position:absolute;left:23px;top:43px;width:20px;height:14px;background:#253323;box-shadow:-10px 3px #446338,10px 3px #446338}
+body.blockworld #themeCharacters .right{transform:scaleX(-1);background:linear-gradient(#9cc2a6 0 35%,#658d80 35% 64%,#435e56 64%)}
+body.blockworld #themeCharacters .top{width:70px;height:80px;background:linear-gradient(#cbb49a 0 35%,#a98c6c 35% 64%,#6d7fa4 64%)}
+body.blockworld #themeCharacters .bottom{width:85px;height:58px;background:linear-gradient(#e8cd8d 0 40%,#b28a49 40% 64%,#7a8bb3 64%)}
+body.blockworld .board{box-shadow:5px 7px 0 #608d44,0 14px 30px #405c3544;border-radius:2px}
+body.spacecrew #themeCharacters .peek{width:79px;height:98px;background:#ee6384;border:4px solid #90364b;border-radius:41px 41px 19px 19px;box-shadow:inset -8px -8px #c64f6c}
+body.spacecrew #themeCharacters .peek::before{content:'';position:absolute;left:9px;top:22px;width:48px;height:29px;background:linear-gradient(150deg,#f5ffff,#8fcde3);border:4px solid #466b89;border-radius:20px;box-shadow:inset 5px 4px #ffffffaa}
+body.spacecrew #themeCharacters .peek::after{content:'';position:absolute;right:-15px;top:41px;width:15px;height:31px;background:inherit;border:4px solid #90364b;border-left:0;border-radius:0 12px 12px 0}
+body.spacecrew #themeCharacters .left{background:#58b4f4;border-color:#326e9d;box-shadow:inset -8px -8px #428cc7}
+body.spacecrew #themeCharacters .right{background:#f5bf4d;border-color:#a37725;box-shadow:inset -8px -8px #dea43b;transform:scaleX(-1)}
+body.spacecrew #themeCharacters .top{background:#7fce7a;border-color:#487d49;width:69px;height:82px}
+body.spacecrew #themeCharacters .bottom{background:#af89e7;border-color:#7354a8;width:86px;height:67px}
+body.spacecrew .board{box-shadow:0 0 25px #ff819555,0 15px 30px #080d2855}
 </style></head><body><main>
 <header><div><h1>✿ sudoku bloom</h1><p>A little joy for your mind</p></div><b id="total">✧ 0 solved</b></header>
 <div id="homeScreen"><section class="card welcome"><h2 id="greeting">Welcome to Sudoku Bloom ✨</h2><p>A peaceful puzzle, just for you.</p><label for="playerName">Your name</label><input id="playerName" maxlength="32" placeholder="What should we call you?"></section><div class="card"><b>Choose your skin</b><div class="themes" id="themes"></div></div>
 <h3>Choose your difficulty</h3><div class="levels"><button data-d="0">Beginner</button><button data-d="1">Intermediate</button><button data-d="2">Advanced</button></div><div class="card"><p id="homeProgress">Your Sudoku journey starts here.</p><button id="resumeGame" class="start-large" hidden>↶ Continue saved game</button><p id="savedGameInfo" class="muted" hidden></p><button id="startGame" class="primary start-large">Start Game →</button></div></div><div id="gameScreen" hidden><button id="backHome" class="back-btn">← Home</button><h2>Your peaceful puzzle</h2>
 <div class="card"><b id="stage">Beginner · Stage 1</b><p id="milestone">Complete five puzzles to reach your next milestone.</p></div>
 <div class="stats"><span>TIME <b id="clock">00:00</b></span><span id="difficulty">BEGINNER</span></div>
-<div id="themeCharacters" aria-hidden="true"><span id="characterLeft">▦</span><span id="characterRight">▣</span></div><div id="board" class="board" aria-label="Sudoku board"></div><div id="numbers" class="numbers"></div>
+<div class="board-scene"><div id="themeCharacters" aria-hidden="true"><span class="peek top"></span><span class="peek left"></span><span class="peek right"></span><span class="peek bottom"></span></div><div id="board" class="board" aria-label="Sudoku board"></div></div><div id="numbers" class="numbers"></div>
 <div class="tools"><button id="erase">⌫ Erase</button><button id="notes">✎ Notes off</button><button id="hint">✧ Hint</button><button id="undo">↶ Undo</button></div>
 <section id="checkpointPanel" class="card checkpoints"><b>📌 Branch checkpoints</b><p class="checkpoint-help">Save your board before trying a different approach. Restoring a checkpoint does not refund hints or Undo uses.</p><button id="saveCheckpoint">+ Pin this stage</button><div id="checkpointList"></div></section><div class="actions"><button id="restart">Restart</button><button class="primary" id="new">New puzzle ↗</button></div>
 <p id="message">Select a cell and choose a number.</p><p class="muted">No mistake counter · Unlimited unique-solution puzzles · Progress saved locally</p></div>
@@ -58,7 +82,7 @@ $('resumeGame').onclick=()=>{if(s&&!s.done)game()};
 $('startGame').onclick=()=>{if(s&&!s.done&&s.d===profile.difficulty){game();return;}if(s&&!s.done&&s.d!==profile.difficulty){ask('Start another difficulty?','This will replace your unfinished '+names[s.d]+' puzzle. You can select Cancel and use Continue saved game instead.',()=>{begin(profile.difficulty);game()},'Start new puzzle');return}begin(profile.difficulty);game()};
 $('celebrateHome').onclick=home;
 $('celebrateNext').onclick=()=>{$('celebration').classList.remove('open');begin(s.d);game()};
-function theme(t){if(!palettes[t])t=0;profile.theme=t;document.body.classList.toggle('rainbow',t===0);document.body.classList.toggle('blockworld',t===5);document.body.classList.toggle('spacecrew',t===6);$('characterLeft').textContent=t===5?'▦':'◕';$('characterRight').textContent=t===5?'▣':'◔';let p=palettes[t];['--bg','--paper','--ink','--accent','--soft','--peer','--match','--border'].forEach((v,i)=>document.documentElement.style.setProperty(v,p[i+1]));document.querySelectorAll('.theme').forEach((b,i)=>b.classList.toggle('active',i===t));save()}
+function theme(t){if(!palettes[t])t=0;profile.theme=t;document.body.classList.toggle('rainbow',t===0);document.body.classList.toggle('blockworld',t===5);document.body.classList.toggle('spacecrew',t===6);let p=palettes[t];['--bg','--paper','--ink','--accent','--soft','--peer','--match','--border'].forEach((v,i)=>document.documentElement.style.setProperty(v,p[i+1]));document.querySelectorAll('.theme').forEach((b,i)=>b.classList.toggle('active',i===t));save()}
 palettes.forEach((p,i)=>{let b=document.createElement('button');b.className='theme';b.textContent=p[0];b.style.borderTop='7px solid '+p[4];b.onclick=()=>theme(i);$('themes').appendChild(b)});
 function conflict(r,c){let g=s.grid,v=g[r][c];if(!v)return false;for(let i=0;i<9;i++)if(i!==c&&g[r][i]===v||i!==r&&g[i][c]===v)return true;for(let i=(r/3|0)*3;i<(r/3|0)*3+3;i++)for(let j=(c/3|0)*3;j<(c/3|0)*3+3;j++)if((i!==r||j!==c)&&g[i][j]===v)return true;return false}
 function tRainbow(){return profile.theme===0}
